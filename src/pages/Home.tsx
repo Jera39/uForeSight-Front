@@ -1,28 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 interface Dataset {
   columns: string[];
-  data: any[][];
+  data: Row[];
 }
-
+interface Row {
+  [key: string]: any; // Define que cada clave es un string y el valor puede ser de cualquier tipo
+}
 const Home = () => {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
   useEffect(() => {
-    // Aquí harías la llamada al backend para obtener el dataset
-    // Por ahora, simularemos que no hay dataset cargado inicialmente
+    // Llamada al backend para obtener el dataset cargado
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/dataset');
+        const response = await fetch('http://127.0.0.1:5000/home-dataset');
         if (response.ok) {
           const data = await response.json();
-          setDataset(data);
+          setDataset({
+            columns: data.columns,
+            data: data.data,
+          });
         } else {
-          // Si no hay dataset, dejamos el estado como null
+          // Si no hay dataset cargado
           setDataset(null);
         }
       } catch (error) {
@@ -33,6 +38,7 @@ const Home = () => {
 
     fetchData();
   }, []);
+
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -112,8 +118,8 @@ const Home = () => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, rowIndex) => (
                   <TableRow key={rowIndex}>
-                    {row.map((cell, cellIndex) => (
-                      <TableCell key={cellIndex}>{cell}</TableCell>
+                    {dataset.columns.map((column, cellIndex) => (
+                      <TableCell key={cellIndex}>{row[column]}</TableCell>
                     ))}
                   </TableRow>
                 ))}
@@ -135,4 +141,3 @@ const Home = () => {
 };
 
 export default Home;
-
